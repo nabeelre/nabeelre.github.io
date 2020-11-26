@@ -159,12 +159,12 @@ sup {
 }
 
 a {
-  color: #bd5d38;
+  color: #800000;
   text-decoration: none;
   background-color: transparent;
 }
 a:hover {
-  color: #824027;
+  color: #152237;
   text-decoration: underline;
 }
 
@@ -364,7 +364,7 @@ h1, h2, h3, h4, h5, h6,
   font-family: "Saira Extra Condensed", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-weight: 700;
   line-height: 1.2;
-  color: #343a40;
+  color: #152237;
 }
 
 h1, .h1 {
@@ -373,6 +373,7 @@ h1, .h1 {
 
 h2, .h2 {
   font-size: 3.5rem;
+  color: #800000;
 }
 
 h3, .h3 {
@@ -2883,7 +2884,7 @@ fieldset:disabled a.btn {
   text-decoration: none;
 }
 .btn-link:hover {
-  color: #000080;
+  color: #152237;
   text-decoration: underline;
 }
 .btn-link:focus, .btn-link.focus {
@@ -4583,7 +4584,7 @@ input[type=button].btn-block {
 }
 .page-link:hover {
   z-index: 2;
-  color: #000080;
+  color: #152237;
   text-decoration: none;
   background-color: #e9ecef;
   border-color: #dee2e6;
@@ -6075,7 +6076,7 @@ a.close.disabled {
 }
 
 .bg-primary {
-  background-color: #bd5d38 !important;
+  background-color: #152237 !important;
 }
 
 a.bg-primary:hover, a.bg-primary:focus,
@@ -9777,11 +9778,11 @@ button.bg-dark:focus {
 }
 
 .text-primary {
-  color: #bd5d38 !important;
+  color: #800000 !important;
 }
 
 a.text-primary:hover, a.text-primary:focus {
-  color: #824027 !important;
+  color: #152237 !important;
 }
 
 .text-secondary {
@@ -9990,14 +9991,6 @@ body {
     padding-left: 17rem;
   }
 }
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  text-transform: uppercase;
-}
 
 h1 {
   line-height: 1;
@@ -10010,7 +10003,6 @@ p.lead {
 
 .subheading {
   font-family: "Saira Extra Condensed", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  text-transform: uppercase;
   font-weight: 500;
   font-size: 1.5rem;
 }
@@ -10062,24 +10054,6 @@ p.lead {
   #sideNav .navbar-collapse .navbar-nav .nav-item .nav-link {
     display: block;
   }
-}
-.social-icons .social-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 3.5rem;
-  width: 3.5rem;
-  background-color: #495057;
-  color: #fff;
-  border-radius: 100%;
-  font-size: 1.5rem;
-  margin-right: 1.5rem;
-}
-.social-icons .social-icon:last-child {
-  margin-right: 0;
-}
-.social-icons .social-icon:hover {
-  background-color: #bd5d38;
 }
 
 .dev-icons {
