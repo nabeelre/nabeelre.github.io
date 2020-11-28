@@ -1,3 +1,3 @@
 # nabeelre.github.io
 
-Also reachable at (www.)nabeelr.com
+Also reachable at nabeelr.com
