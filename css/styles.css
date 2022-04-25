@@ -71,7 +71,7 @@ body {
   line-height: 1.5;
   color: #212529;
   text-align: left;
-  background-color: #f3efea;
+  background-color: #EAF2EF;
 }
 
 [tabindex="-1"]:focus:not(:focus-visible) {
@@ -169,7 +169,7 @@ sup {
 }
 
 a {
-  color: #800000;
+  color: #4E2A84;
   text-decoration: none;
   background-color: transparent;
 }
@@ -383,7 +383,7 @@ h1, .h1 {
 
 h2, .h2 {
   font-size: 3.5rem;
-  color: #800000;
+  color: #4E2A84;
 }
 
 h3, .h3 {
@@ -9788,7 +9788,7 @@ button.bg-dark:focus {
 }
 
 .text-primary {
-  color: #800000 !important;
+  color: #4E2A84 !important;
 }
 
 a.text-primary:hover, a.text-primary:focus {
