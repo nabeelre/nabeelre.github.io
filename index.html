@@ -35,7 +35,6 @@
                 <ul class="navbar-nav">
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#about">About</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#projects">Research Projects</a></li>
-                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#presentations">Presentations</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#otherprojects">Other Projects</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#hobbies">Hobbies</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="assets/docs/NR_CV.pdf" target="_blank">CV</a></li>
@@ -55,21 +54,27 @@
                     </h1>
                     <div class="subheading mb-5">
                         <b>
-                        <a href="mailto:nabeelr@u.northwestern.edu">nabeelr@u.northwestern.edu</a>
-                        <br>
-                        <a href="mailto:nabeelr@umich.edu">nabeelr@umich.edu</a>
-                        <br>
-                        <a href="https://github.com/nabeelre/" target="_blank">GitHub profile</a>
-                        <br>
-                        <a href="assets/docs/NR_CV.pdf" target="_blank">CV (pdf)</a> </b>
+                            <a href="mailto:nabeelr@u.northwestern.edu">nabeelr@u.northwestern.edu</a>
+                            <br>
+                            <a href="assets/docs/NR_CV.pdf" target="_blank">CV (pdf)</a> 
+                            <br>
+                            <a href="https://github.com/nabeelre/" target="_blank">GitHub</a>
+                        </b>
                     </div>
                     <p class="lead mb-5">
-                        I'm a first year Astronomy PhD student in CIERA at
-                        Northwestern University.
-                        I recently graduated from the University of Michigan -
-                        Ann Arbor with a major in Astronomy & Astrophysics.
-                        My research interests include data- and
-                        computation-intensive astronomy and galactic dynamics.
+                        I'm a third year Astronomy PhD student in CIERA at
+                        Northwestern University working with Prof. Adam A. 
+                        Miller. I'm working on integrating a machine learning I 
+                        created called BTSbot into the ZTF Bright Transient 
+                        Survey workflow to automatically and rapidly identify 
+                        transients. I will soon also work with the upcoming LS4 
+                        survey.
+                        <br> <br>
+                        I graduated from the University of Michigan in 2021 and 
+                        have an ongoing project there with Prof.Monica Valluri. 
+                        We work with the DESI Milky Way Survey to map the 
+                        Milky Way's dark matter distribution with a spherical 
+                        Jeans modeling code I wrote called NIMBLE.
                         <br> <br>
                         This website serves as a supplement to my
                         <a href="assets/docs/NR_CV.pdf" target="_blank">CV</a>,
@@ -86,10 +91,53 @@
                     <div class="subheading mb-3">Presentations of these projects can be found below.</div>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
+                            <h3 class="mb-0">BTSbot: A ConvNet to automatically identify ZTF transients</h3>
+                            <div class="subheading mb-3">
+                              Northwestern University, CIERA
+                            </div>
+                            <p>
+                                The Bright Transient Survey (BTS) relies on 
+                                visual inspection ("scanning") to select sources 
+                                for accomplishing its mission of 
+                                spectroscopically classifying all bright 
+                                extragalactic transients found by the Zwicky 
+                                Transient Facility (ZTF). BTSbot provides a 
+                                bright transient score to individual ZTF alert 
+                                packets using their image data and 14 extracted 
+                                features. BTSbot eliminates the need for 
+                                scanning by automatically identifying new bright 
+                                transient candidates. BTSbot outperforms BTS 
+                                scanners in terms of completeness (99% vs. 95%) 
+                                and identification speed (on average, 7.4 hours 
+                                quicker).                    
+                                <br> <br>
+                                Codebase publicly available on 
+                                <a href="https://github.com/nabeelre/BTSbot" target="_blank">GitHub</a>
+                            </p>
+                            <div class="subheading mb-3">
+                                Presentations & Publications
+                            </div>
+                            <p>
+                                Presented a poster at the Workshop on ML for 
+                                Astrophysics at the 40th International 
+                                Conference on Machine Learning: 
+                                <br> 
+                                <a href="https://ui.adsabs.harvard.edu/abs/2023arXiv230707618R/abstract" target="_blank">Conference proceedings</a> 
+                                | <a href="assets/docs/ICML_poster.pdf" target="_blank">Poster PDF</a>
+                            </p>
+                            <p>
+                                Gave an oral talk at the Transients and Variable 
+                                Universe conference at UIUC:
+                                <br> 
+                                <a href="assets/docs/UIUC_slides.key" target="_blank">Slides</a>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
                             <h3 class="mb-0">Non-Parametric Spherical Jeans Mass Estimation with B-Splines</h3>
                             <div class="subheading mb-3">University of Michigan – Ann Arbor</div>
                             <p>
-                                Excerpt from abstract:<br>
                                 We consider the application of Jeans modeling to
                                 mapping the dark matter distribution in the outer
                                 reaches of the Milky Way using field halo stars.
@@ -100,29 +148,29 @@
                                 deconvolves observational effects from the
                                 underlying distributions.
                                 <br> <br>
-                                Published as <a href="https://ui.adsabs.harvard.edu/abs/2022MNRAS.tmp..438R/abstract" target="_blank">Rehemtulla et al. 2022</a>
-                                <br> <br>
-                                I have made the code presented in this paper
-                                publicly available on my GitHub under the name
+                                Codebase publicly available under the name
                                 <a href="https://github.com/nabeelre/NIMBLE" target="_blank">NIMBLE (Non-parametrIc jeans Mass with B-spLinEs)</a>
                             </p>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
-                        <div class="flex-grow-1">
-                            <h3 class="mb-0">ZTF BTS Neural Network Classifier</h3>
                             <div class="subheading mb-3">
-                              Northwestern University
-                              <br>
-                              Center for Interdisciplinary Exploration and
-                              Research in Astrophysics (CIERA)
+                                Presentations & Publications
                             </div>
                             <p>
-                                Building a neural network to identify transients
-                                that will become bright enough for inclusion in
-                                the Zwicky Transient Facility (ZTF) Bright
-                                Transient Survey (BTS) potentially allowing for earlier
-                                spectra of transients and a reduction of daily human-hours scanning nightly data.
+                                Published as <a href="https://ui.adsabs.harvard.edu/abs/2022MNRAS.tmp..438R/abstract" target="_blank">Rehemtulla et al. 2022</a>
+                            </p>
+                            <p>
+                                Presented an iPoster at 237th AAS meeting and won a <b>Chambliss Astronomy Achievement award</b>.
+                                <br>
+                                <a href="https://aas237-aas.ipostersessions.com/Default.aspx?s=14-2E-85-57-B7-AA-BB-94-75-7D-43-D4-26-0B-79-CB" target="_blank">the iPoster</a>
+                                | <a href="assets/docs/AAS_iPoster.pdf" target="_blank">PDF version</a>
+                            </p>
+                            <p>
+                                Gave an oral talk at the Michigan Institute for Data Science Poster Symposium 2020 and won the <b>Outstanding Undergraduate Poster</b> award.
+                                <br>
+                                <a href="assets/docs/MIDAS_poster.pdf" target="_blank">the poster</a> |
+                                <a href="assets/docs/MIDAS_slides.pdf" target="_blank">the presentation slides</a>
+                            </p>
+                            <p>
+                                I wrote a short summary of this project (a bite) for the undergraduate research series on <a href="https://astrobites.org/2021/06/03/ur/" target="_blank">astrobites.org</a>
                             </p>
                         </div>
                     </div>
@@ -132,57 +180,19 @@
                             <div class="subheading mb-0">University of Michigan – Ann Arbor</div>
                             <div class="subheading mb-3">MDM Observatory, Kitt Peak National Observatory</div>
                             <p>
-                                Excerpt from abstract:<br>
                                 We observe four target merger galaxies in H-alpha to
                                 calcualte their star formation rate densities and compile
                                 previously observed data giving us their gas surface density.
                                 With these two quantities, we can investigate how various
                                 merger galaxies stand in relation to non-mergers with
-                                respect to the Kennicutt-Schmidt law.
-                                <br>
-                                <a href="assets/docs/461_paper.pdf" target="_blank">final paper</a>
+                                respect to the Kennicutt-Schmidt law. 
                             </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <hr class="m-0" />
-            <!-- Presentations-->
-            <section class="resume-section" id="presentations">
-                <div class="resume-section-content">
-                    <h2 class="mb-5">Presentations</h2>
-                    <div class="subheading mb-3">Descriptions of the projects in these presentations can be found above.</div>
-                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
-                        <div class="flex-grow-1">
-                            <h3 class="mb-0">Non-Parametric Spherical Jeans Mass Estimation with B-Splines</h3>
-                            <div class="subheading mb-3">University of Michigan, Ann Arbor</div>
+                            <div class="subheading mb-3">
+                                Presentations & Publications
+                            </div>
                             <p>
-                                I presented this work as an iPoster at the DESI Special Session of the 237th AAS meeting in January 2021 where I won a <b>Chambliss Astronomy Achievement award</b>.
-                                <br>
-                                <a href="https://aas237-aas.ipostersessions.com/Default.aspx?s=14-2E-85-57-B7-AA-BB-94-75-7D-43-D4-26-0B-79-CB" target="_blank">the iPoster</a>
-                                | <a href="assets/docs/AAS_iPoster.pdf" target="_blank">PDF version</a>
-                                <br> <br>
-                                I also gave a short talk at the Michigan Institute for Data Science Poster Symposium 2020 where I won the award for <b>Outstanding Undergraduate Poster</b>.
-                                I ensured that my content was accessibile for the non-astronomy audience by focusing on the motivations and implications of the work. In 2019 and 2021,
-                                I presented similarly accessibile posters at the University of Michigan Astronomy Undergraduate Poster Session.
-                                <br>
-                                <a href="assets/docs/MIDAS_poster.pdf" target="_blank">the poster</a> |
-                                <a href="assets/docs/MIDAS_slides.pdf" target="_blank">the presentation slides</a>
-                                <br> <br>
-                                I wrote a short summary of this project (a bite) for the undergraduate research series on <a href="https://astrobites.org/2021/06/03/ur/" target="_blank">astrobites.org</a>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
-                        <div class="flex-grow-1">
-                            <h3 class="mb-0">Star Formation Rate in Merger Galaxies</h3>
-                            <div class="subheading mb-0">University of Michigan, Ann Arbor</div>
-                            <div class="subheading mb-3">MDM Observatory - Kitt Peak National Observatory</div>
-                            <p>
-                                This project was done as part of a University of Michigan course ASTRO 461 taught by Professor Sally Oey.
-                                In the observing proposal we describe the motivations, feasability, and target selection.
-                                <br>
-                                <a href="assets/docs/461_proposal.pdf" target="_blank">the observing proposal</a>
+                                <a href="assets/docs/461_proposal.pdf" target="_blank">the observing proposal</a> |
+                                <a href="assets/docs/461_paper.pdf" target="_blank">write-up of findings</a>
                             </p>
                         </div>
                     </div>
@@ -217,11 +227,10 @@
                     <h2 class="mb-5">Hobbies</h2>
                     <p class="subheading mb-3">
                         When I'm not staring into a jupyter notebook, I like to
-                        keep myself moving and trying new things. To pass time
-                        during quarantine, I baked and cooked with friends and
-                        read for pleasure. In order to stay fit I've taken up
-                        indoor rock climbing on top of lifting and cardio for
-                        general fitness.
+                        keep myself moving and trying new things. During 
+                        quarantine, I starting baking all kinds of desserts. In 
+                        order to stay fit after eating the desserts, I've taken 
+                        up indoor rock climbing. 
                         <br>
                     </p>
 
@@ -231,7 +240,7 @@
 
                 </div>
             </section>
-            <span id='ack' > &nbsp; Last Edited 04/25/22 - Template from <a id='ack' href="https://startbootstrap.com/theme/resume" target="_blank">bootstrap</a> </span>
+            <span id='ack' > &nbsp; Last Edited 07/23/23 - Template from <a id='ack' href="https://startbootstrap.com/theme/resume" target="_blank">bootstrap</a> </span>
             <hr class="m-0" />
         </div>
         <!-- Bootstrap core JS-->
