@@ -42,3 +42,48 @@ function setActiveNavLink() {
 
 // Run on page load
 setActiveNavLink();
+
+// Track external link clicks
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (link && link.hostname !== window.location.hostname && link.href.startsWith('http')) {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'click', {
+                'event_category': 'Outbound Link',
+                'event_label': link.href,
+                'transport_type': 'beacon'
+            });
+        }
+    }
+});
+
+// Track PDF downloads
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('a[href*=".pdf"]');
+    if (link) {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'file_download', {
+                'event_category': 'PDF',
+                'event_label': link.getAttribute('href'),
+                'transport_type': 'beacon'
+            });
+        }
+    }
+});
+
+// Track scroll depth (if user scrolls more than 75% down the page)
+let scrollTracked = false;
+window.addEventListener('scroll', function() {
+    if (!scrollTracked && typeof gtag !== 'undefined') {
+        const scrollPercent = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
+        if (scrollPercent >= 75) {
+            scrollTracked = true;
+            gtag('event', 'scroll', {
+                'event_category': 'Engagement',
+                'event_label': 'Page Scroll 75%',
+                'value': scrollPercent
+            });
+        }
+    }
+});
+
