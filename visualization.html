@@ -193,7 +193,12 @@
                         // The import map above provides fallback resolution for apache-arrow if needed
                         atlasStatus.textContent = "Loading embedding-atlas module…";
                         const embeddingAtlasModule = await import("https://esm.sh/embedding-atlas@0.12.0");
-                        const EmbeddingAtlas = embeddingAtlasModule.EmbeddingAtlas;
+                        // EmbeddingAtlas might be a default export or named export
+                        const EmbeddingAtlas = embeddingAtlasModule.default || embeddingAtlasModule.EmbeddingAtlas || embeddingAtlasModule;
+                        
+                        if (!EmbeddingAtlas) {
+                            throw new Error("EmbeddingAtlas class not found in module. Available exports: " + Object.keys(embeddingAtlasModule).join(", "));
+                        }
                         
                         atlasStatus.textContent = "Loading mosaic-core module…";
                         const mosaicModule = await import("https://esm.sh/@uwdata/mosaic-core@0.21.1");
@@ -255,6 +260,21 @@
                         await coordinator.exec(createTableSQL);
 
                         atlasStatus.textContent = "Rendering Embedding Atlas…";
+                        
+                        // Verify the container element exists and is valid
+                        if (!atlasRoot) {
+                            throw new Error("Container element 'embedding-atlas-root' not found");
+                        }
+                        if (!(atlasRoot instanceof HTMLElement)) {
+                            throw new Error("Container element is not a valid DOM element");
+                        }
+                        
+                        // Ensure the container is in the DOM
+                        if (!atlasRoot.isConnected) {
+                            throw new Error("Container element is not connected to the DOM");
+                        }
+                        
+                        // Initialize EmbeddingAtlas using Svelte component API
                         new EmbeddingAtlas({
                             target: atlasRoot,
                             props: {
