@@ -197,6 +197,7 @@
                         
                         // Log available exports for debugging
                         console.log("EmbeddingAtlas module exports:", Object.keys(embeddingAtlasModule));
+                        console.log("Full module:", embeddingAtlasModule);
                         
                         // EmbeddingAtlas might be a default export or named export
                         let EmbeddingAtlas = embeddingAtlasModule.default || embeddingAtlasModule.EmbeddingAtlas;
@@ -206,12 +207,22 @@
                             EmbeddingAtlas = embeddingAtlasModule;
                         }
                         
+                        // Check if it's a Svelte component (has mount method) or a regular class
+                        if (EmbeddingAtlas && typeof EmbeddingAtlas === 'function') {
+                            console.log("EmbeddingAtlas is a function/class");
+                            console.log("EmbeddingAtlas.length (arity):", EmbeddingAtlas.length);
+                            if (EmbeddingAtlas.prototype) {
+                                console.log("EmbeddingAtlas has prototype");
+                                console.log("EmbeddingAtlas.prototype methods:", Object.getOwnPropertyNames(EmbeddingAtlas.prototype));
+                            }
+                        }
+                        
                         if (!EmbeddingAtlas) {
                             throw new Error("EmbeddingAtlas class not found in module. Available exports: " + Object.keys(embeddingAtlasModule).join(", "));
                         }
                         
                         console.log("EmbeddingAtlas type:", typeof EmbeddingAtlas);
-                        console.log("EmbeddingAtlas constructor:", EmbeddingAtlas);
+                        console.log("EmbeddingAtlas:", EmbeddingAtlas);
                         
                         atlasStatus.textContent = "Loading mosaic-core module…";
                         const mosaicModule = await import("https://esm.sh/@uwdata/mosaic-core@0.21.1");
@@ -308,25 +319,55 @@
                             targetElement = wrapper;
                         }
                         
-                        // Initialize EmbeddingAtlas using Svelte component API
-                        // The target must be a valid DOM element that Svelte can mount to
+                        // Initialize EmbeddingAtlas
+                        // Try different API formats - it might be a Svelte component or a regular class
                         console.log("Creating EmbeddingAtlas with target:", targetElement);
-                        const atlasInstance = new EmbeddingAtlas({
-                            target: targetElement,
-                            props: {
-                                coordinator,
-                                data: {
-                                    table: "maxvit_embeddings",
-                                    id: "id",
-                                    projection: { x: "x", y: "y" },
-                                    text: "text",
-                                    category: "source_set"
-                                },
-                                embeddingViewConfig: {
-                                    colorScheme: "dark"
+                        console.log("EmbeddingAtlas is:", EmbeddingAtlas);
+                        console.log("EmbeddingAtlas prototype:", EmbeddingAtlas.prototype);
+                        
+                        let atlasInstance;
+                        try {
+                            // Try Svelte component API first (target and props)
+                            console.log("Trying Svelte component API...");
+                            atlasInstance = new EmbeddingAtlas({
+                                target: targetElement,
+                                props: {
+                                    coordinator,
+                                    data: {
+                                        table: "maxvit_embeddings",
+                                        id: "id",
+                                        projection: { x: "x", y: "y" },
+                                        text: "text",
+                                        category: "source_set"
+                                    },
+                                    embeddingViewConfig: {
+                                        colorScheme: "dark"
+                                    }
                                 }
+                            });
+                        } catch (svelteError) {
+                            console.log("Svelte API failed, trying direct constructor...", svelteError);
+                            // Try direct constructor with container as first argument
+                            try {
+                                atlasInstance = new EmbeddingAtlas(targetElement, {
+                                    coordinator,
+                                    data: {
+                                        table: "maxvit_embeddings",
+                                        id: "id",
+                                        projection: { x: "x", y: "y" },
+                                        text: "text",
+                                        category: "source_set"
+                                    },
+                                    embeddingViewConfig: {
+                                        colorScheme: "dark"
+                                    }
+                                });
+                            } catch (directError) {
+                                console.log("Direct constructor also failed, trying with just container...", directError);
+                                // Try with just the container
+                                atlasInstance = new EmbeddingAtlas(targetElement);
                             }
-                        });
+                        }
                         
                         console.log("EmbeddingAtlas instance created:", atlasInstance);
 
