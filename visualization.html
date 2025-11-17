@@ -242,12 +242,12 @@
                                 near_threshold,
                                 new_drb,
                                 printf(
-                                    'FID %s - Field %s - Mag %.2f - RA %.2f - Dec %.2f',
-                                    fid,
-                                    field,
-                                    magpsf,
-                                    ra,
-                                    dec
+                                    'FID %d - Field %d - Mag %.2f - RA %.2f - Dec %.2f',
+                                    CAST(fid AS INTEGER),
+                                    CAST(field AS INTEGER),
+                                    CAST(magpsf AS DOUBLE),
+                                    CAST(ra AS DOUBLE),
+                                    CAST(dec AS DOUBLE)
                                 ) AS text
                             FROM read_csv_auto('${DATA_FILE}', header = true, sample_size = -1);
                         `;
