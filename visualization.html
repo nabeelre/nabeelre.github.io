@@ -89,6 +89,23 @@
                         This presentation captures how machine learning accelerates transient discovery and showcases the visualization pipeline in action.
                     </p>
                 </div>
+                <div class="atlas-card">
+                    <div class="atlas-card-text">
+                        <h2>Embedding Atlas Explorer</h2>
+                        <p>
+                            The chart below renders the <code>maxvit_gz_emb.csv</code> dataset (30k+ detections) directly in your browser using DuckDB-WASM +
+                            Embedding Atlas. Pan, zoom, filter, and inspect individual sources without leaving the page.
+                        </p>
+                        <p class="atlas-tip">Tip: hover to preview tooltips, drag to lasso select regions, and toggle categories to compare survey subsets.</p>
+                        <div id="embedding-atlas-status" class="atlas-status" role="status" aria-live="polite">
+                            Initializing Embedding Atlas…
+                        </div>
+                    </div>
+                    <div id="embedding-atlas-root" class="atlas-view" aria-label="Interactive embedding atlas workspace"></div>
+                    <noscript class="atlas-noscript">
+                        JavaScript is disabled, so the interactive Embedding Atlas cannot be displayed. Enable JavaScript to explore the embeddings.
+                    </noscript>
+                </div>
             </div>
         </section>
 
@@ -104,6 +121,135 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Core theme JS-->
         <script src="js/scripts.js"></script>
+        <script type="module">
+            const atlasRoot = document.getElementById("embedding-atlas-root");
+            const atlasStatus = document.getElementById("embedding-atlas-status");
+            const DATA_FILE = "maxvit_gz_emb.csv";
+            const CSV_URL = new URL(`/assets/dat/${DATA_FILE}`, window.location.origin);
+            const DUCKDB_VERSION = "1.30.0";
+            const DUCKDB_ASSET_BASE = new URL("/assets/duckdb-wasm/", window.location.origin);
+
+            async function createDuckDB() {
+                const duckdb = await import(
+                    `https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@${DUCKDB_VERSION}/dist/duckdb-browser.mjs`
+                );
+
+                const bundles = {
+                    mvp: {
+                        mainModule: new URL("duckdb-mvp.wasm", DUCKDB_ASSET_BASE).href,
+                        mainWorker: new URL("duckdb-browser-mvp.worker.js", DUCKDB_ASSET_BASE).href
+                    },
+                    eh: {
+                        mainModule: new URL("duckdb-eh.wasm", DUCKDB_ASSET_BASE).href,
+                        mainWorker: new URL("duckdb-browser-eh.worker.js", DUCKDB_ASSET_BASE).href
+                    }
+                };
+
+                const bundle = await duckdb.selectBundle(bundles);
+                const worker = new Worker(bundle.mainWorker);
+                const logger = new duckdb.ConsoleLogger();
+                const db = new duckdb.AsyncDuckDB(logger, worker);
+                await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+                await db.open({
+                    filesystem: {
+                        forceFullHTTPReads: true
+                    }
+                });
+                const connection = await db.connect();
+                return { duckdb: db, connection };
+            }
+
+            if (atlasRoot && atlasStatus && !atlasRoot.dataset.initialized) {
+                atlasRoot.dataset.initialized = "true";
+                (async () => {
+                    try {
+                        atlasStatus.textContent = "Starting DuckDB (WebAssembly)…";
+                        const [{ EmbeddingAtlas }, { Coordinator, wasmConnector }] = await Promise.all([
+                            import("https://unpkg.com/embedding-atlas@0.12.0/dist/index.js?module"),
+                            import("https://unpkg.com/@uwdata/mosaic-core@0.21.1/dist/src/index.js?module")
+                        ]);
+
+                        const coordinator = new Coordinator();
+                        const duckdbResources = await createDuckDB();
+                        const connector = wasmConnector({
+                            duckdb: duckdbResources.duckdb,
+                            connection: duckdbResources.connection
+                        });
+                        coordinator.databaseConnector(connector);
+
+                        atlasStatus.textContent = "Downloading embeddings CSV…";
+                        const response = await fetch(CSV_URL);
+                        if (!response.ok) {
+                            throw new Error("Dataset download failed");
+                        }
+                        const csvBuffer = new Uint8Array(await response.arrayBuffer());
+
+                        atlasStatus.textContent = "Loading data into DuckDB…";
+                        await duckdbResources.duckdb.registerFileBuffer(DATA_FILE, csvBuffer);
+
+                        const createTableSQL = `
+                            CREATE OR REPLACE TABLE maxvit_embeddings AS
+                            SELECT
+                                row_number() OVER () AS id,
+                                CAST(umap_emb_1 AS DOUBLE) AS x,
+                                CAST(umap_emb_2 AS DOUBLE) AS y,
+                                source_set,
+                                source_set_outlier,
+                                fid,
+                                field,
+                                magpsf,
+                                sigmapsf,
+                                ra,
+                                dec,
+                                acai_h,
+                                acai_v,
+                                acai_o,
+                                acai_n,
+                                age,
+                                days_since_peak,
+                                days_to_peak,
+                                near_threshold,
+                                new_drb,
+                                printf(
+                                    'FID %s - Field %s - Mag %.2f - RA %.2f - Dec %.2f',
+                                    fid,
+                                    field,
+                                    magpsf,
+                                    ra,
+                                    dec
+                                ) AS text
+                            FROM read_csv_auto('${DATA_FILE}', header = true, sample_size = -1);
+                        `;
+
+                        await coordinator.exec(createTableSQL);
+
+                        atlasStatus.textContent = "Rendering Embedding Atlas…";
+                        new EmbeddingAtlas({
+                            target: atlasRoot,
+                            props: {
+                                coordinator,
+                                data: {
+                                    table: "maxvit_embeddings",
+                                    id: "id",
+                                    projection: { x: "x", y: "y" },
+                                    text: "text",
+                                    category: "source_set"
+                                },
+                                embeddingViewConfig: {
+                                    colorScheme: "dark"
+                                }
+                            }
+                        });
+
+                        atlasStatus.remove();
+                    } catch (error) {
+                        console.error(error);
+                        atlasStatus.textContent = `Embedding Atlas failed to load: ${error.message}`;
+                        atlasStatus.classList.add("atlas-status-error");
+                    }
+                })();
+            }
+        </script>
     </body>
 </html>
 

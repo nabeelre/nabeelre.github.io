@@ -346,6 +346,72 @@ p {
     text-align: center;
 }
 
+/* Embedding Atlas */
+.atlas-card {
+    margin-top: var(--spacing-lg);
+    background: var(--background-card);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: var(--spacing-md);
+    box-shadow: 0 20px 45px rgba(10, 11, 20, 0.6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.atlas-card-text h2 {
+    margin-bottom: var(--spacing-sm);
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.atlas-card-text p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.atlas-card-text code {
+    font-family: "SFMono-Regular", "JetBrains Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--nebulae-purple);
+}
+
+.atlas-tip {
+    font-size: 0.95rem;
+    color: var(--star-blue);
+    font-weight: 500;
+}
+
+.atlas-status {
+    margin-top: var(--spacing-sm);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.atlas-status-error {
+    color: #ff8da1;
+}
+
+.atlas-view {
+    min-height: 640px;
+    border-radius: 14px;
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    background: radial-gradient(circle at top, rgba(148, 146, 255, 0.12), transparent 60%),
+        radial-gradient(circle at bottom, rgba(74, 144, 226, 0.08), transparent 45%),
+        #101225;
+    overflow: hidden;
+    position: relative;
+}
+
+.atlas-noscript {
+    font-size: 0.95rem;
+    color: #ffbf8f;
+}
+
 @media (max-width: 768px) {
     .video-card {
         padding: var(--spacing-md);
