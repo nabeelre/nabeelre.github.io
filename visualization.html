@@ -36,6 +36,22 @@
         />
         <!-- Core theme CSS-->
         <link href="css/styles.css" rel="stylesheet" />
+        <!-- Import map to resolve ES module dependencies -->
+        <script type="importmap">
+        {
+            "imports": {
+                "apache-arrow": "https://esm.sh/apache-arrow@14.0.1"
+            },
+            "scopes": {
+                "https://esm.sh/": {
+                    "apache-arrow": "https://esm.sh/apache-arrow@14.0.1"
+                },
+                "https://cdn.jsdelivr.net/": {
+                    "apache-arrow": "https://esm.sh/apache-arrow@14.0.1"
+                }
+            }
+        }
+        </script>
     </head>
     <body>
         <!-- Navigation-->
@@ -125,27 +141,35 @@
             const atlasRoot = document.getElementById("embedding-atlas-root");
             const atlasStatus = document.getElementById("embedding-atlas-status");
             const DATA_FILE = "maxvit_gz_emb.csv";
-            const CSV_URL = new URL(`/assets/dat/${DATA_FILE}`, window.location.origin);
+            const CSV_URL = new URL(`./assets/dat/${DATA_FILE}`, window.location.href);
             const DUCKDB_VERSION = "1.30.0";
-            const DUCKDB_ASSET_BASE = new URL("/assets/duckdb-wasm/", window.location.origin);
 
             async function createDuckDB() {
                 const duckdb = await import(
                     `https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@${DUCKDB_VERSION}/dist/duckdb-browser.mjs`
                 );
 
+                // Use absolute paths from root to ensure same-origin and avoid security issues
+                const getAssetUrl = (path) => {
+                    // Construct absolute URL from root for GitHub Pages compatibility
+                    const currentPath = window.location.pathname;
+                    const basePath = currentPath.substring(0, currentPath.lastIndexOf('/')) || '';
+                    return `${window.location.origin}${basePath}/assets/duckdb-wasm/${path}`;
+                };
+                
                 const bundles = {
                     mvp: {
-                        mainModule: new URL("duckdb-mvp.wasm", DUCKDB_ASSET_BASE).href,
-                        mainWorker: new URL("duckdb-browser-mvp.worker.js", DUCKDB_ASSET_BASE).href
+                        mainModule: getAssetUrl("duckdb-mvp.wasm"),
+                        mainWorker: getAssetUrl("duckdb-browser-mvp.worker.js")
                     },
                     eh: {
-                        mainModule: new URL("duckdb-eh.wasm", DUCKDB_ASSET_BASE).href,
-                        mainWorker: new URL("duckdb-browser-eh.worker.js", DUCKDB_ASSET_BASE).href
+                        mainModule: getAssetUrl("duckdb-eh.wasm"),
+                        mainWorker: getAssetUrl("duckdb-browser-eh.worker.js")
                     }
                 };
 
                 const bundle = await duckdb.selectBundle(bundles);
+                // Create worker - URL should be same-origin to avoid security errors
                 const worker = new Worker(bundle.mainWorker);
                 const logger = new duckdb.ConsoleLogger();
                 const db = new duckdb.AsyncDuckDB(logger, worker);
@@ -163,11 +187,18 @@
                 atlasRoot.dataset.initialized = "true";
                 (async () => {
                     try {
-                        atlasStatus.textContent = "Starting DuckDB (WebAssembly)…";
-                        const [{ EmbeddingAtlas }, { Coordinator, wasmConnector }] = await Promise.all([
-                            import("https://unpkg.com/embedding-atlas@0.12.0/dist/index.js?module"),
-                            import("https://unpkg.com/@uwdata/mosaic-core@0.21.1/dist/src/index.js?module")
-                        ]);
+                        atlasStatus.textContent = "Loading Embedding Atlas modules…";
+                        
+                        // Import modules using esm.sh which automatically resolves all dependencies
+                        // The import map above provides fallback resolution for apache-arrow if needed
+                        atlasStatus.textContent = "Loading embedding-atlas module…";
+                        const embeddingAtlasModule = await import("https://esm.sh/embedding-atlas@0.12.0");
+                        const EmbeddingAtlas = embeddingAtlasModule.EmbeddingAtlas;
+                        
+                        atlasStatus.textContent = "Loading mosaic-core module…";
+                        const mosaicModule = await import("https://esm.sh/@uwdata/mosaic-core@0.21.1");
+                        const Coordinator = mosaicModule.Coordinator;
+                        const wasmConnector = mosaicModule.wasmConnector;
 
                         const coordinator = new Coordinator();
                         const duckdbResources = await createDuckDB();
