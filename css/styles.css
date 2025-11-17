@@ -397,7 +397,9 @@ p {
 }
 
 .atlas-view {
-    min-height: 640px;
+    height: 600px;
+    max-height: 600px;
+    min-height: 400px;
     border-radius: 14px;
     border: 1px dashed rgba(255, 255, 255, 0.15);
     background: radial-gradient(circle at top, rgba(148, 146, 255, 0.12), transparent 60%),
@@ -405,6 +407,7 @@ p {
         #101225;
     overflow: hidden;
     position: relative;
+    width: 100%;
 }
 
 .atlas-noscript {
@@ -420,6 +423,12 @@ p {
     .video-wrapper {
         border-width: 1.5px;
         box-shadow: 0 0 0 3px rgba(22, 33, 62, 0.8), 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    
+    .atlas-view {
+        height: 500px;
+        max-height: 500px;
+        min-height: 350px;
     }
 }
 
