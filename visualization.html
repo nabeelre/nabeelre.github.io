@@ -192,13 +192,26 @@
                         // Import modules using esm.sh which automatically resolves all dependencies
                         // The import map above provides fallback resolution for apache-arrow if needed
                         atlasStatus.textContent = "Loading embedding-atlas module…";
-                        const embeddingAtlasModule = await import("https://esm.sh/embedding-atlas@0.12.0");
+                        // Try importing from the dist folder which should have the proper build
+                        const embeddingAtlasModule = await import("https://esm.sh/embedding-atlas@0.12.0/dist/index.js");
+                        
+                        // Log available exports for debugging
+                        console.log("EmbeddingAtlas module exports:", Object.keys(embeddingAtlasModule));
+                        
                         // EmbeddingAtlas might be a default export or named export
-                        const EmbeddingAtlas = embeddingAtlasModule.default || embeddingAtlasModule.EmbeddingAtlas || embeddingAtlasModule;
+                        let EmbeddingAtlas = embeddingAtlasModule.default || embeddingAtlasModule.EmbeddingAtlas;
+                        
+                        // If still not found, try the module itself (it might be the class directly)
+                        if (!EmbeddingAtlas && typeof embeddingAtlasModule === 'function') {
+                            EmbeddingAtlas = embeddingAtlasModule;
+                        }
                         
                         if (!EmbeddingAtlas) {
                             throw new Error("EmbeddingAtlas class not found in module. Available exports: " + Object.keys(embeddingAtlasModule).join(", "));
                         }
+                        
+                        console.log("EmbeddingAtlas type:", typeof EmbeddingAtlas);
+                        console.log("EmbeddingAtlas constructor:", EmbeddingAtlas);
                         
                         atlasStatus.textContent = "Loading mosaic-core module…";
                         const mosaicModule = await import("https://esm.sh/@uwdata/mosaic-core@0.21.1");
@@ -274,9 +287,32 @@
                             throw new Error("Container element is not connected to the DOM");
                         }
                         
+                        // Clear any existing content in the container
+                        atlasRoot.innerHTML = '';
+                        
+                        // Debug: Log the container element to verify it's correct
+                        console.log("Initializing EmbeddingAtlas with container:", atlasRoot);
+                        console.log("Container type:", atlasRoot.constructor.name);
+                        console.log("Container has appendChild:", typeof atlasRoot.appendChild);
+                        console.log("Container nodeName:", atlasRoot.nodeName);
+                        console.log("Container tagName:", atlasRoot.tagName);
+                        
+                        // Try creating a wrapper div if the container isn't a div
+                        let targetElement = atlasRoot;
+                        if (atlasRoot.tagName !== 'DIV') {
+                            console.log("Container is not a DIV, creating wrapper");
+                            const wrapper = document.createElement('div');
+                            wrapper.style.width = '100%';
+                            wrapper.style.height = '100%';
+                            atlasRoot.appendChild(wrapper);
+                            targetElement = wrapper;
+                        }
+                        
                         // Initialize EmbeddingAtlas using Svelte component API
-                        new EmbeddingAtlas({
-                            target: atlasRoot,
+                        // The target must be a valid DOM element that Svelte can mount to
+                        console.log("Creating EmbeddingAtlas with target:", targetElement);
+                        const atlasInstance = new EmbeddingAtlas({
+                            target: targetElement,
                             props: {
                                 coordinator,
                                 data: {
@@ -291,6 +327,8 @@
                                 }
                             }
                         });
+                        
+                        console.log("EmbeddingAtlas instance created:", atlasInstance);
 
                         atlasStatus.remove();
                     } catch (error) {
