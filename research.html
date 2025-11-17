@@ -72,24 +72,25 @@
             <div class="container">
                 <h1>Research</h1>
                 <p class="section-intro">
-                    My research focuses on automating transient follow-up observations and understanding the structure of the Milky Way.
+                    My research focuses on creating machine learning tools to assist with time domain astronomy studies, 
+                    including automating critical parts of real-time discovery and classification workflows for supernovae.
                 </p>
                 
                 <div class="research-item">
-                    <h3>BTSbot: A ConvNet to automatically identify ZTF transients</h3>
-                    <p class="research-meta">Northwestern University, CIERA</p>
+                    <h3>BTSbot: Automated Identification and Follow-up of Bright Transients</h3>
                     <p>
-                        The Bright Transient Survey (BTS) relies on visual inspection ("scanning") to select sources
-                        for accomplishing its mission of spectroscopically classifying all bright extragalactic transients 
-                        found by the Zwicky Transient Facility (ZTF). BTSbot provides a bright transient score to individual 
-                        ZTF alert packets using their image data and 14 extracted features. BTSbot eliminates the need for
-                        scanning by automatically identifying new bright transient candidates.
+                        BTSbot is designed to support the Bright Transient Survey (BTS), a program that aims to spectroscopically 
+                        classify all bright extragalactic transients found in ZTF data.
+                        The model uses image cutouts and metadata together to automatically trigger a request for spectroscopic follow-up for
+                        new transients it discovers. BTSbot has discovered thousands of transients and contributed to the 
+                        world's first fully automated detection, identification, spectroscopic classification, 
+                        and public reporting of a supernova (see Press Release).
                     </p>
                     <div class="research-links">
                         <a href="https://github.com/nabeelre/BTSbot" target="_blank">
                             <i class="fab fa-github"></i> GitHub
                         </a>
-                        <a href="https://ui.adsabs.harvard.edu/abs/2024arXiv240115167R/abstract" target="_blank">
+                        <a href="https://ui.adsabs.harvard.edu/abs/2024ApJ...972....7R/abstract" target="_blank">
                             <i class="fas fa-file-alt"></i> Publication
                         </a>
                         <a href="https://news.northwestern.edu/stories/2023/10/first-supernova-detected-confirmed-classified-and-shared-by-ai/" target="_blank">
@@ -99,14 +100,67 @@
                 </div>
 
                 <div class="research-item">
-                    <h3>Non-Parametric Spherical Jeans Mass Estimation with B-Splines</h3>
-                    <p class="research-meta">University of Michigan – Ann Arbor</p>
+                    <h3>Rapid-response follow-up of infant supernovae</h3>
                     <p>
-                        We consider the application of Jeans modeling to mapping the dark matter distribution in the
-                        outer reaches of the Milky Way using field halo stars. To do so, we develop a novel
-                        non-parametric routine for solving the spherical Jeans equation by fitting B-splines to the
-                        velocity and density profiles of halo stars and an MCMC-based subroutine that deconvolves
-                        observational effects from the underlying distributions.
+                        I've repurposed my BTSbot model to also assist with rapid identification and target-of-opportunity (ToO) observations 
+                        follow-up of young, nearby supernovae. Automation here allows me to probe the earliest phases of supernovae, which are
+                        very difficult to access with traditional workflows. I've used BTSbot to fully automatically trigger ToO observations
+                        to the SED Machine, the SOAR Telescope, LCO telescopes, and the Swift space telescope. BTSbot enabled space-based Swift
+                        follow-up just 6 minutes after its discovery by BTSbot. I use these observations to constrain supernova physics like
+                        mass loss rates and progentior properties.
+                    </p>
+                    <div class="research-links">
+                        <a href="https://github.com/nabeelre/BTSbot-nearby-utils" target="_blank">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                        <a href="https://ui.adsabs.harvard.edu/abs/2025ApJ...985..241R/abstract" target="_blank">
+                            <i class="fas fa-file-alt"></i> Publication
+                        </a>
+                        <a href="https://www.wis-tns.org/astronotes/astronote/2025-209" target="_blank">
+                            <i class="fas fa-newspaper"></i> Selected AstroNote
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="research-item">
+                    <h3>StarEmbed</h3>
+                    <p>
+                    StarEmbed is a benchmark for testing time series foundation models (TSFMs) on variable stars light curves. 
+                    We aim to improve and accelerate variable star analysis by measuring the performance of various TSFMs on 
+                    astrophysically-motivated downstream tasks like clustering, classification, and anomaly detection in a 
+                    reproducible and transparent benchmark.
+                    </p>
+                    <div class="research-links">
+                        <a href="https://github.com/skai-institute/StarEmbed" target="_blank">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                        <a href="https://ui.adsabs.harvard.edu/abs/2025arXiv251006200L/abstract" target="_blank">
+                            <i class="fas fa-file-alt"></i> Paper
+                        </a>
+                        <a href="https://hibb-bb.github.io/star-embed.github.io/" target="_blank">
+                            <i class="fas fa-link"></i> Project Webpage
+                        </a>
+                    </div>
+                </div>
+
+                <div class="research-item">
+                    <h3>RBbot: Real/bogus classification for the La Silla Schmidt Southern Survey</h3>
+                    <p>
+                        RBbot is a computer vision model which classifies alerts from the new LS4 survey as real or bogus.
+                        In training RBbot, I benchmarked various domain adaptation techniques to identify how to most 
+                        effectively make use of real/bogus labels from previous surveys.
+                    </p>
+                    <div class="research-links">
+                    </div>
+                </div>
+
+                <div class="research-item">
+                    <h3>NIMBLE: Non-parametrIc jeans Modeling with B-spLinEs</h3>
+                    <p>
+                        As part of my undergraduate thesis at the University of Michigan, I wrote a modeling code called NIMBLE which deconvolves observational effects 
+                        from the underlying velocity and density profiles of halo stars with a novel MCMC-based routine to 
+                        estimate the cumulative mass profile of the Milky Way. We are now applying this code to real data
+                        from DESI and Gaia to map the dark matter distribution in the Milky Way.
                     </p>
                     <div class="research-links">
                         <a href="https://github.com/nabeelre/NIMBLE" target="_blank">
@@ -115,29 +169,6 @@
                         <a href="https://ui.adsabs.harvard.edu/abs/2022MNRAS.tmp..438R/abstract" target="_blank">
                             <i class="fas fa-file-alt"></i> Publication
                         </a>
-                        <a href="https://aas237-aas.ipostersessions.com/Default.aspx?s=14-2E-85-57-B7-AA-BB-94-75-7D-43-D4-26-0B-79-CB" target="_blank">
-                            <i class="fas fa-image"></i> AAS iPoster
-                        </a>
-                    </div>
-                </div>
-
-                <div class="research-item">
-                    <h3>RBbot</h3>
-                    <p class="research-meta">Northwestern University, CIERA</p>
-                    <p>
-                        Description of RBbot project.
-                    </p>
-                    <div class="research-links">
-                    </div>
-                </div>
-
-                <div class="research-item">
-                    <h3>StarEmbed</h3>
-                    <p class="research-meta">Northwestern University, CIERA</p>
-                    <p>
-                        Description of StarEmbed project.
-                    </p>
-                    <div class="research-links">
                     </div>
                 </div>
 

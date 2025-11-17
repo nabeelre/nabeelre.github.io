@@ -85,7 +85,8 @@
             <div class="container visualization-content">
                 <h1>Visualization</h1>
                 <p class="section-intro">
-                    Explore the latest visualization work highlighting automated transient follow-up efforts. The embedded video below walks through the workflow and provides additional context on the tools powering these observations.
+                    I'm passionate about creating exciting and effective visualizations to disseminate my work. 
+                    Here are two examples of such efforts:
                 </p>
                 <div class="video-card">
                     <div class="video-wrapper">
@@ -102,17 +103,21 @@
                         ></iframe>
                     </div>
                     <p class="video-caption">
-                        This presentation captures how machine learning accelerates transient discovery and showcases the visualization pipeline in action.
+                        I created this animation for a visualization competition at a Northwestern Computational Science Symposium where it
+                        was awarded first prize. 
+                        It captures for a general audience how supernova discovery and classification workflows function
+                        and highlights how my BTSbot model enabled the world's first fully automated discovery and classification of a supernova.
                     </p>
                 </div>
+
                 <div class="atlas-card">
                     <div class="atlas-card-text">
-                        <h2>Embedding Atlas Explorer</h2>
+                        <h2>BTSbot Embedding Atlas</h2>
                         <p>
-                            The chart below renders the <code>maxvit_gz_emb.csv</code> dataset (30k+ detections) directly in your browser using DuckDB-WASM +
-                            Embedding Atlas. Pan, zoom, filter, and inspect individual sources without leaving the page.
+                            The interactive panel below shows a 2-D view of BTSbot's learned representation of input ZTF data. 
+                            You can pan, zoom, filter, and inspect individual sources to help understand what BTSbot is doing. 
                         </p>
-                        <p class="atlas-tip">Tip: hover to preview tooltips, drag to lasso select regions, and toggle categories to compare survey subsets.</p>
+                        <p class="atlas-tip">Note: the interactive panel does not function on the Safari browser but should work well on other browsers.</p>
                         <div id="embedding-atlas-status" class="atlas-status" role="status" aria-live="polite">
                             Initializing Embedding Atlas…
                         </div>
