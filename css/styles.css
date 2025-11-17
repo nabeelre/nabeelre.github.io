@@ -357,6 +357,10 @@ p {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
 }
 
 .atlas-card-text h2 {
@@ -397,8 +401,8 @@ p {
 }
 
 .atlas-view {
-    height: 600px;
-    max-height: 600px;
+    height: 720px;
+    max-height: 720px;
     min-height: 400px;
     border-radius: 14px;
     border: 1px dashed rgba(255, 255, 255, 0.15);
@@ -426,8 +430,8 @@ p {
     }
     
     .atlas-view {
-        height: 500px;
-        max-height: 500px;
+        height: 600px;
+        max-height: 600px;
         min-height: 350px;
     }
 }
