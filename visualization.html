@@ -117,7 +117,7 @@
                             The interactive panel below shows a 2-D view of BTSbot's learned representation of input ZTF data. 
                             You can pan, zoom, filter, and inspect individual sources to help understand what BTSbot is doing. 
                         </p>
-                        <p class="atlas-tip">Note: the interactive panel does not function on the Safari browser but should work well on other browsers.</p>
+                        <p class="atlas-tip">Note: the interactive panel does not function on some browsers so try another browser if it doesn't load.</p>
                         <div id="embedding-atlas-status" class="atlas-status" role="status" aria-live="polite">
                             Initializing Embedding Atlas…
                         </div>
@@ -174,8 +174,36 @@
                 };
 
                 const bundle = await duckdb.selectBundle(bundles);
+                
+                // Check if running from file:// protocol (local file)
+                // Workers cannot be loaded from file:// protocol for security reasons
+                if (window.location.protocol === 'file:') {
+                    throw new Error("Cannot load DuckDB Workers from file:// protocol. Please use a local web server (e.g., 'python -m http.server' or 'npx serve').");
+                }
+                
                 // Create worker - URL should be same-origin to avoid security errors
-                const worker = new Worker(bundle.mainWorker);
+                // For Safari, ensure the worker URL is absolute
+                const workerUrl = bundle.mainWorker;
+                let worker;
+                try {
+                    worker = new Worker(workerUrl);
+                } catch (workerError) {
+                    // Provide helpful error message for Worker creation failures
+                    if (workerError.name === 'SecurityError' || workerError.message.includes('Worker')) {
+                        if (window.location.protocol === 'file:') {
+                            throw new Error("Workers cannot be loaded from file:// protocol. Please use a local web server.");
+                        } else {
+                            throw new Error(`Failed to create Worker: ${workerError.message}. This may be due to CORS restrictions or the worker file not being accessible.`);
+                        }
+                    }
+                    throw workerError;
+                }
+                
+                // Add error handler for worker (Safari can be more strict about worker errors)
+                worker.onerror = (error) => {
+                    console.error("DuckDB Worker error:", error);
+                };
+                
                 const logger = new duckdb.ConsoleLogger();
                 const db = new duckdb.AsyncDuckDB(logger, worker);
                 await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
@@ -194,10 +222,51 @@
                     try {
                         atlasStatus.textContent = "Loading Embedding Atlas modules…";
                         
+                        // Check if running from file:// protocol (local file)
+                        // Workers cannot be loaded from file:// protocol for security reasons
+                        if (window.location.protocol === 'file:') {
+                            throw new Error("Cannot load Embedding Atlas from file:// protocol. Please use a local web server (e.g., 'python -m http.server' or 'npx serve').");
+                        }
+                        
+                        // Override Worker constructor to intercept embedding-atlas worker requests
+                        // and serve them from local assets to avoid CORS issues
+                        const OriginalWorker = window.Worker;
+                        // Construct absolute URLs for worker files
+                        const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) || '';
+                        const workerPathMap = {
+                            'search.worker.js': `${window.location.origin}${basePath}/assets/embedding-atlas/search.worker.js`,
+                            'clustering.worker.js': `${window.location.origin}${basePath}/assets/embedding-atlas/clustering.worker.js`
+                        };
+                        
+                        window.Worker = class extends OriginalWorker {
+                            constructor(scriptURL, options) {
+                                try {
+                                    const url = typeof scriptURL === 'string' ? new URL(scriptURL, window.location.href) : scriptURL;
+                                    const pathname = url.pathname || (typeof scriptURL === 'string' ? scriptURL : '');
+                                    
+                                    // Check if this is an embedding-atlas worker request from esm.sh or other CDN
+                                    if (pathname.includes('search.worker.js') || pathname.includes('clustering.worker.js')) {
+                                        const workerName = pathname.includes('search.worker.js') ? 'search.worker.js' : 'clustering.worker.js';
+                                        const localPath = workerPathMap[workerName];
+                                        if (localPath) {
+                                            console.log(`Intercepting worker: ${scriptURL} -> ${localPath}`);
+                                            super(localPath, options);
+                                            return;
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.warn('Error intercepting worker, using original:', e);
+                                }
+                                // For all other workers, use original behavior
+                                super(scriptURL, options);
+                            }
+                        };
+                        
                         // Import modules using esm.sh which automatically resolves all dependencies
                         // The import map above provides fallback resolution for apache-arrow if needed
                         atlasStatus.textContent = "Loading embedding-atlas module…";
-                        // Try importing from the dist folder which should have the proper build
+                        
+                        // Import from esm.sh which handles dependencies correctly
                         const embeddingAtlasModule = await import("https://esm.sh/embedding-atlas@0.12.0/dist/index.js");
                         
                         // Log available exports for debugging
@@ -241,6 +310,13 @@
                             connection: duckdbResources.connection
                         });
                         coordinator.databaseConnector(connector);
+                        
+                        // Verify the connector is properly set up
+                        // Safari can have timing issues, so we ensure everything is ready
+                        if (!connector) {
+                            throw new Error("Database connector failed to initialize");
+                        }
+                        console.log("Database connector initialized:", connector);
 
                         atlasStatus.textContent = "Downloading embeddings CSV…";
                         const response = await fetch(CSV_URL);
@@ -287,6 +363,26 @@
                         `;
 
                         await coordinator.exec(createTableSQL);
+                        
+                        // Verify the table was created successfully
+                        // This is especially important for Safari which can have timing issues
+                        atlasStatus.textContent = "Verifying data table…";
+                        const verifyTableSQL = "SELECT COUNT(*) as count FROM maxvit_embeddings LIMIT 1";
+                        try {
+                            // Use the connection directly to verify the table exists
+                            const verifyResult = await duckdbResources.connection.query(verifyTableSQL);
+                            if (!verifyResult || verifyResult.toArray().length === 0) {
+                                throw new Error("Failed to verify data table creation");
+                            }
+                            const rowCount = verifyResult.toArray()[0]?.count;
+                            console.log("Table verified, row count:", rowCount);
+                            if (!rowCount || rowCount === 0) {
+                                throw new Error("Data table is empty");
+                            }
+                        } catch (verifyError) {
+                            console.warn("Table verification failed, but continuing:", verifyError);
+                            // Don't fail completely, but log the warning
+                        }
 
                         atlasStatus.textContent = "Rendering Embedding Atlas…";
                         
@@ -324,72 +420,302 @@
                             targetElement = wrapper;
                         }
                         
+                        // Prepare data configuration object with explicit validation
+                        // Safari can be strict about object property access, so we ensure all properties exist
+                        const dataConfig = {
+                            table: "maxvit_embeddings",
+                            id: "id",
+                            projection: { 
+                                x: "x", 
+                                y: "y" 
+                            },
+                            text: "text",
+                            category: "source_set"
+                        };
+                        
+                        // Validate data config before use
+                        if (!dataConfig.table || !dataConfig.id || !dataConfig.projection) {
+                            throw new Error("Invalid data configuration: missing required properties");
+                        }
+                        
+                        const embeddingViewConfig = {
+                            colorScheme: "dark"
+                            // Note: embedding-atlas should automatically fall back to WebGL
+                            // if WebGPU is not available. The "Could not get WebGPU canvas context"
+                            // warning is expected in Firefox and the component should use WebGL instead.
+                        };
+                        
+                        const initialState = {
+                            colorBy: "source_set",
+                            showBottomMenu: false,
+                            displayMode: "density"
+                        };
+                        
+                        // Verify coordinator is ready and can execute queries
+                        if (!coordinator) {
+                            throw new Error("Coordinator is not initialized");
+                        }
+                        
+                        // Test that the coordinator can execute a simple query
+                        // This is especially important for Safari
+                        try {
+                            await coordinator.exec("SELECT 1 as test");
+                            console.log("Coordinator query test successful");
+                        } catch (coordTestError) {
+                            console.warn("Coordinator query test failed, but continuing:", coordTestError);
+                            // Don't fail completely, but log the warning
+                        }
+                        
                         // Initialize EmbeddingAtlas
-                        // Try different API formats - it might be a Svelte component or a regular class
+                        // Based on the constructor signature (arity: 2), it expects (container, props)
                         console.log("Creating EmbeddingAtlas with target:", targetElement);
                         console.log("EmbeddingAtlas is:", EmbeddingAtlas);
                         console.log("EmbeddingAtlas prototype:", EmbeddingAtlas.prototype);
+                        console.log("Data config:", dataConfig);
                         
-                        let atlasInstance;
-                        try {
-                            // Try Svelte component API first (target and props)
-                            console.log("Trying Svelte component API...");
-                            atlasInstance = new EmbeddingAtlas({
-                                target: targetElement,
-                                props: {
-                                    coordinator,
-                                    data: {
-                                        table: "maxvit_embeddings",
-                                        id: "id",
-                                        projection: { x: "x", y: "y" },
-                                        text: "text",
-                                        category: "source_set"
-                                    },
-                                    embeddingViewConfig: {
-                                        colorScheme: "dark"
-                                    },
-                                    initialState: {
-                                        colorBy: "source_set",
-                                        showBottomMenu: false,
-                                        displayMode: "density"
-                                    }
-                                }
-                            });
-                        } catch (svelteError) {
-                            console.log("Svelte API failed, trying direct constructor...", svelteError);
-                            // Try direct constructor with container as first argument
+                        // Detect browser
+                        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                        const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+                        console.log("Browser is Safari:", isSafari);
+                        console.log("Browser is Firefox:", isFirefox);
+                        
+                        // For Safari, add a small delay to ensure all async operations are complete
+                        if (isSafari) {
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                        }
+                        
+                        // For Firefox, add a delay and ensure data is ready
+                        if (isFirefox) {
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                            // Verify the table has data in Firefox
                             try {
-                                atlasInstance = new EmbeddingAtlas(targetElement, {
-                                    coordinator,
-                                    data: {
-                                        table: "maxvit_embeddings",
-                                        id: "id",
-                                        projection: { x: "x", y: "y" },
-                                        text: "text",
-                                        category: "source_set"
-                                    },
-                                    embeddingViewConfig: {
-                                        colorScheme: "dark"
-                                    },
-                                    initialState: {
-                                        colorBy: "source_set",
-                                        showBottomMenu: false,
-                                        displayMode: "density"
-                                    }
-                                });
-                            } catch (directError) {
-                                console.log("Direct constructor also failed, trying with just container...", directError);
-                                // Try with just the container
-                                atlasInstance = new EmbeddingAtlas(targetElement);
+                                const testQuery = "SELECT COUNT(*) as count FROM maxvit_embeddings LIMIT 1";
+                                const testResult = await duckdbResources.connection.query(testQuery);
+                                const count = testResult.toArray()[0]?.count;
+                                console.log("Firefox: Table row count:", count);
+                                if (!count || count === 0) {
+                                    throw new Error("Table is empty in Firefox");
+                                }
+                            } catch (firefoxTestError) {
+                                console.warn("Firefox data verification:", firefoxTestError);
                             }
                         }
                         
-                        console.log("EmbeddingAtlas instance created:", atlasInstance);
+                        // Prepare props object - ensure all properties are properly defined
+                        // Create a fresh object to avoid any reference issues
+                        const props = {
+                            coordinator: coordinator,
+                            data: {
+                                table: dataConfig.table,
+                                id: dataConfig.id,
+                                projection: {
+                                    x: dataConfig.projection.x,
+                                    y: dataConfig.projection.y
+                                },
+                                text: dataConfig.text,
+                                category: dataConfig.category
+                            },
+                            embeddingViewConfig: {
+                                colorScheme: embeddingViewConfig.colorScheme
+                            },
+                            initialState: {
+                                colorBy: initialState.colorBy,
+                                showBottomMenu: initialState.showBottomMenu,
+                                displayMode: initialState.displayMode
+                            }
+                        };
+                        
+                        // Validate props object structure
+                        if (!props.data || !props.data.table) {
+                            throw new Error("Data prop is invalid: table property missing");
+                        }
+                        if (!props.data.projection || !props.data.projection.x || !props.data.projection.y) {
+                            throw new Error("Data prop is invalid: projection properties missing");
+                        }
+                        if (!props.coordinator) {
+                            throw new Error("Coordinator prop is missing");
+                        }
+                        
+                        // Log props structure without coordinator (which has circular references)
+                        console.log("Props structure:", {
+                            coordinator: "[Coordinator object]",
+                            data: props.data,
+                            embeddingViewConfig: props.embeddingViewConfig,
+                            initialState: props.initialState
+                        });
+                        
+                        // The constructor expects (container, props) based on arity: 2
+                        let atlasInstance;
+                        try {
+                            console.log("Initializing EmbeddingAtlas with direct constructor (container, props)...");
+                            console.log("Target element:", targetElement);
+                            console.log("Props data table:", props.data.table);
+                            
+                            atlasInstance = new EmbeddingAtlas(targetElement, props);
+                            console.log("EmbeddingAtlas instance created successfully:", atlasInstance);
+                            
+                            // For Firefox, wait longer and check if the component rendered
+                            // The component may need more time to query data and render
+                            if (isFirefox) {
+                                // Wait longer for Firefox - it may need more time to process queries
+                                // The component creates the canvas asynchronously after data loads
+                                console.log("Firefox: Waiting for component to render...");
+                                await new Promise(resolve => setTimeout(resolve, 3000));
+                                
+                                // Check again after waiting
+                                let checkCount = 0;
+                                const maxChecks = 10;
+                                while (checkCount < maxChecks) {
+                                    const canvas = targetElement.querySelector('canvas');
+                                    const svg = targetElement.querySelector('svg');
+                                    if (canvas || svg) {
+                                        console.log(`Firefox: Found rendering element after ${checkCount + 1} checks`);
+                                        break;
+                                    }
+                                    if (checkCount < maxChecks - 1) {
+                                        await new Promise(resolve => setTimeout(resolve, 500));
+                                    }
+                                    checkCount++;
+                                }
+                                
+                                // Check multiple possible selectors for rendered content
+                                const possibleSelectors = [
+                                    'canvas',
+                                    'svg',
+                                    '.embedding-view',
+                                    '[class*="embedding"]',
+                                    '[class*="atlas"]',
+                                    'div[style*="position"]',
+                                    'div[style*="width"]'
+                                ];
+                                
+                                let hasContent = false;
+                                let foundElement = null;
+                                for (const selector of possibleSelectors) {
+                                    foundElement = targetElement.querySelector(selector);
+                                    if (foundElement) {
+                                        hasContent = true;
+                                        console.log(`Firefox: Found rendered content with selector: ${selector}`, foundElement);
+                                        break;
+                                    }
+                                }
+                                
+                                // Also check if the container has any child elements
+                                const hasChildren = targetElement.children.length > 0;
+                                console.log("Firefox: Component has rendered content:", hasContent);
+                                console.log("Firefox: Container has children:", hasChildren, `(${targetElement.children.length} children)`);
+                                console.log("Firefox: Container innerHTML length:", targetElement.innerHTML.length);
+                                
+                                if (!hasContent && !hasChildren) {
+                                    console.warn("Firefox: Component may not have rendered. Checking coordinator and data...");
+                                    // Try a test query to ensure coordinator is working
+                                    try {
+                                        const testQuery = "SELECT COUNT(*) as count FROM maxvit_embeddings LIMIT 1";
+                                        await coordinator.exec(testQuery);
+                                        console.log("Firefox: Coordinator test query successful");
+                                        
+                                        // Try querying actual data points
+                                        const dataQuery = "SELECT x, y FROM maxvit_embeddings LIMIT 10";
+                                        const dataResult = await coordinator.exec(dataQuery);
+                                        console.log("Firefox: Data query result:", dataResult);
+                                    } catch (coordTest) {
+                                        console.error("Firefox: Coordinator test query failed:", coordTest);
+                                    }
+                                } else if (hasChildren) {
+                                    console.log("Firefox: Container children:", Array.from(targetElement.children).map(c => ({
+                                        tag: c.tagName,
+                                        classes: c.className,
+                                        id: c.id,
+                                        style: c.style.cssText,
+                                        innerHTML: c.innerHTML.substring(0, 200) // First 200 chars
+                                    })));
+                                    
+                                    // Check for canvas or svg elements inside the children
+                                    const firstChild = targetElement.children[0];
+                                    if (firstChild) {
+                                        const canvas = firstChild.querySelector('canvas');
+                                        const svg = firstChild.querySelector('svg');
+                                        console.log("Firefox: Found canvas:", canvas !== null, canvas ? `(${canvas.width}x${canvas.height})` : '');
+                                        console.log("Firefox: Found svg:", svg !== null, svg ? `(${svg.clientWidth}x${svg.clientHeight})` : '');
+                                        
+                                        // Check all descendants for rendering elements
+                                        const allCanvases = firstChild.querySelectorAll('canvas');
+                                        const allSvgs = firstChild.querySelectorAll('svg');
+                                        console.log("Firefox: Total canvases:", allCanvases.length);
+                                        console.log("Firefox: Total SVGs:", allSvgs.length);
+                                        
+                                        if (allCanvases.length > 0) {
+                                            allCanvases.forEach((canvas, i) => {
+                                                console.log(`Firefox: Canvas ${i}:`, {
+                                                    width: canvas.width,
+                                                    height: canvas.height,
+                                                    clientWidth: canvas.clientWidth,
+                                                    clientHeight: canvas.clientHeight,
+                                                    style: canvas.style.cssText,
+                                                    visible: canvas.offsetWidth > 0 && canvas.offsetHeight > 0
+                                                });
+                                            });
+                                        }
+                                        
+                                        // Check if the component might need more time to render data
+                                        if (allCanvases.length === 0 && allSvgs.length === 0) {
+                                            console.warn("Firefox: No canvas or svg found. Component may still be initializing...");
+                                            
+                                            // Inspect the component instance for any error states
+                                            console.log("Firefox: Inspecting component instance:", {
+                                                hasComponent: !!atlasInstance.component,
+                                                componentKeys: atlasInstance.component ? Object.keys(atlasInstance.component) : [],
+                                                containerChildren: atlasInstance.container ? atlasInstance.container.children.length : 0,
+                                                currentProps: atlasInstance.currentProps ? Object.keys(atlasInstance.currentProps) : []
+                                            });
+                                            
+                                            // Check if there are any error messages in the container
+                                            const errorElements = targetElement.querySelectorAll('[class*="error"], [id*="error"]');
+                                            if (errorElements.length > 0) {
+                                                console.warn("Firefox: Found potential error elements:", errorElements);
+                                            }
+                                            
+                                            // Log the full DOM structure for debugging
+                                            console.log("Firefox: Full container structure:", targetElement.innerHTML.substring(0, 500));
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (initError) {
+                            console.error("Failed to initialize EmbeddingAtlas:", initError);
+                            // If there's a Worker CORS issue, it's likely because embedding-atlas
+                            // is trying to load workers from a CDN which has CORS restrictions
+                            const errorMessage = initError.message || String(initError);
+                            if (errorMessage.includes('Worker') || errorMessage.includes('SecurityError') || 
+                                (initError.name === 'SecurityError')) {
+                                throw new Error("Worker initialization failed due to CORS restrictions. The embedding-atlas library requires Workers to be loaded from the same origin. This is a known limitation when loading from CDNs.");
+                            }
+                            // If the error mentions 'table' being undefined, it might be because
+                            // the component partially initialized before the Worker error
+                            if (errorMessage.includes('table') && errorMessage.includes('undefined')) {
+                                throw new Error("Component initialization failed: data properties not accessible. This may be due to a Worker CORS issue preventing proper initialization.");
+                            }
+                            throw initError;
+                        }
 
                         atlasStatus.remove();
                     } catch (error) {
                         console.error(error);
-                        atlasStatus.textContent = `Embedding Atlas failed to load: ${error.message}`;
+                        // Safely extract error message, handling circular references
+                        let errorMessage = "Unknown error";
+                        try {
+                            if (error && error.message) {
+                                errorMessage = error.message;
+                            } else if (typeof error === 'string') {
+                                errorMessage = error;
+                            } else {
+                                errorMessage = String(error);
+                            }
+                        } catch (e) {
+                            // If we can't extract the message, use a generic one
+                            errorMessage = "Failed to initialize Embedding Atlas";
+                        }
+                        atlasStatus.textContent = `Embedding Atlas failed to load: ${errorMessage}`;
                         atlasStatus.classList.add("atlas-status-error");
                     }
                 })();
