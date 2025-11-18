@@ -313,6 +313,15 @@ p {
     gap: var(--spacing-lg);
 }
 
+.visualization-content h1 {
+    margin-bottom: var(--spacing-xs);
+}
+
+.visualization-content h1 + .section-intro {
+    margin-top: calc(var(--spacing-md) * -1.5);
+    margin-bottom: var(--spacing-sm);
+}
+
 .video-card {
     background: var(--background-card);
     border: 1px solid rgba(255, 255, 255, 0.08);
