@@ -310,7 +310,7 @@ p {
 .visualization-content {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
 }
 
 .visualization-content h1 {
@@ -360,12 +360,32 @@ p {
     color: var(--text-secondary);
     font-size: 1rem;
     line-height: 1.7;
-    text-align: center;
+    text-align: left;
+}
+
+.github-link {
+    margin-top: var(--spacing-sm);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: left;
+}
+
+.github-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--star-blue);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.github-link a:hover {
+    color: var(--nebulae-purple);
 }
 
 /* Embedding Atlas */
 .atlas-card {
-    margin-top: var(--spacing-lg);
+    min-width: 0;
     background: var(--background-card);
     border: 1px solid var(--border-color);
     border-radius: 18px;
@@ -434,6 +454,69 @@ p {
 .atlas-noscript {
     font-size: 0.95rem;
     color: #ffbf8f;
+}
+
+/* Link card */
+.link-card {
+    min-width: 0;
+    background: var(--background-card);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: var(--spacing-md);
+    box-shadow: 0 20px 45px rgba(10, 11, 20, 0.6);
+    max-width: 1104px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+.link-card h2 {
+    margin-bottom: var(--spacing-sm);
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.link-card p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.link-card-image {
+    display: block;
+    margin-top: var(--spacing-sm);
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.link-card-image:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+.link-card-image img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+}
+
+.link-card-image + p {
+    margin-top: var(--spacing-sm);
+}
+
+.link-card p a {
+    color: var(--star-blue);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.link-card p a:hover {
+    color: var(--nebulae-purple);
 }
 
 @media (max-width: 768px) {
