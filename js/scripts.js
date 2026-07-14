@@ -43,6 +43,33 @@ function setActiveNavLink() {
 // Run on page load
 setActiveNavLink();
 
+// Reveal below-the-fold content on scroll (skipped for reduced-motion users
+// and older browsers; content is always visible without JS)
+(function () {
+    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion || !('IntersectionObserver' in window)) return;
+
+    const candidates = document.querySelectorAll('.page-section .container > *');
+    const belowFold = Array.prototype.filter.call(candidates, function (el) {
+        return el.getBoundingClientRect().top > window.innerHeight;
+    });
+    if (!belowFold.length) return;
+
+    const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { rootMargin: '0px 0px -8% 0px' });
+
+    belowFold.forEach(function (el) {
+        el.classList.add('reveal');
+        observer.observe(el);
+    });
+})();
+
 // Track external link clicks
 document.addEventListener('click', function(e) {
     const link = e.target.closest('a');
